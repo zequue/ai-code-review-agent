@@ -1,0 +1,39 @@
+{
+  "feature/buggy": {
+    "decision": "REQUEST_CHANGES",
+    "bugs": [
+      {
+        "id": "sql-injection",
+        "description": "Búsqueda con f-string en la query",
+        "file": "shop/db.py",
+        "lines": [70, 74],
+        "categories": ["security"]
+      },
+      {
+        "id": "admin-sin-auth",
+        "description": "POST /admin/products sin autenticación",
+        "file": "shop/app.py",
+        "lines": [46, 59],
+        "categories": ["auth", "security"]
+      },
+      {
+        "id": "dinero-en-float",
+        "description": "Descuento calculado en float y truncado con int()",
+        "file": "shop/checkout.py",
+        "lines": [27, 29],
+        "categories": ["money"]
+      },
+      {
+        "id": "cupon-reutilizable",
+        "description": "El cupón no se verifica ni se marca como usado",
+        "file": "shop/checkout.py",
+        "lines": [23, 37],
+        "categories": ["business-logic"]
+      }
+    ]
+  },
+  "feature/clean": {
+    "decision": "APPROVE",
+    "bugs": []
+  }
+}
