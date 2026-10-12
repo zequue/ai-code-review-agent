@@ -29,6 +29,13 @@ def create_app(db_path: str | None = None) -> Flask:
     def products():
         return jsonify(db.list_products(get_conn()))
 
+    @app.get("/products/search")
+    def search():
+        term = request.args.get("q", "").strip()
+        if not term:
+            return jsonify([])
+        return jsonify(db.search_products(get_conn(), term))
+
     @app.get("/products/<int:product_id>")
     def product_detail(product_id: int):
         product = db.get_product(get_conn(), product_id)
@@ -36,12 +43,27 @@ def create_app(db_path: str | None = None) -> Flask:
             return jsonify({"error": "not found"}), 404
         return jsonify(product)
 
+    @app.post("/admin/products")
+    def admin_add_product():
+        data = request.get_json(silent=True) or {}
+        try:
+            product_id = db.add_product(
+                get_conn(),
+                str(data["name"]),
+                str(data["category"]),
+                int(data["price_cents"]),
+                int(data.get("stock", 0)),
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            return jsonify({"error": str(exc)}), 400
+        return jsonify({"id": product_id}), 201
+
     @app.post("/checkout")
     def do_checkout():
         payload = request.get_json(silent=True) or {}
         try:
             cart = Cart.from_payload(payload.get("items", []))
-            order = checkout(get_conn(), cart)
+            order = checkout(get_conn(), cart, payload.get("coupon"))
         except (CartError, CheckoutError, KeyError, ValueError) as exc:
             return jsonify({"error": str(exc)}), 400
         return jsonify(order), 201
