@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.db
+.env
+
+# Enunciado del reto: documento interno, no se publica
+challenge/
