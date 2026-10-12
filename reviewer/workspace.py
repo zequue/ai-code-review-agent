@@ -35,6 +35,7 @@ def diff_between(repo: Path, base: str, head: str) -> str:
 @contextmanager
 def checkout(repo: Path, ref: str, patch: Path | None = None):
     """Worktree temporal en `ref`, opcionalmente con un .patch aplicado."""
+    git(repo, "worktree", "prune")  # restos de corridas interrumpidas
     tmp = Path(tempfile.mkdtemp(prefix="review-"))
     workdir = tmp / "src"
     git(repo, "worktree", "add", "--detach", str(workdir), ref)

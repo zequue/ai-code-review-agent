@@ -10,6 +10,7 @@ from pathlib import Path
 
 from reviewer.diff import FileDiff
 from reviewer.models import Finding, ToolResult
+from reviewer.rules import run_rules
 
 TOOL_TIMEOUT_S = 120
 
@@ -178,5 +179,6 @@ def run_static_analysis(workdir: Path, diffs: list[FileDiff]) -> list[ToolResult
     return [
         keep_changed_lines(run_ruff(workdir, changed_py), diffs),
         keep_changed_lines(run_bandit(workdir, source_py), diffs),
+        keep_changed_lines(run_rules(workdir, diffs), diffs),
         run_pytest(workdir),  # los tests son globales: si algo se rompe, se rompe el cambio
     ]

@@ -18,7 +18,9 @@ class Finding:
     message: str
     rule: str | None = None  # p. ej. "B608", "F401", nombre del test
     suggestion: str | None = None
-    confidence: float | None = None  # solo LLM, 0..1
+    confidence: float | None = None  # solo LLM, 0..1 (informativo: un 7B casi siempre dice 1.0)
+    verified: bool | None = None  # solo LLM: None = no se verificó
+    verification: str | None = None  # razonamiento del verificador o "corroborado por bandit"
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -35,7 +37,8 @@ class ToolResult:
     duration_s: float
     findings: list[Finding] = field(default_factory=list)
     error: str | None = None
-    omitted: int = 0  # hallazgos preexistentes, fuera de las líneas del diff
+    omitted: int = 0  # hallazgos descartados: preexistentes o (LLM) fuera de las líneas del diff
+    stats: dict = field(default_factory=dict)  # métricas extra: tokens, archivos, etc.
 
     def to_dict(self) -> dict:
         return asdict(self)
