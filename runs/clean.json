@@ -1,0 +1,125 @@
+{
+  "target": "main...feature/clean",
+  "files": [
+    "shop/app.py",
+    "shop/checkout.py",
+    "shop/db.py",
+    "shop/tests/test_coupons.py",
+    "shop/tests/test_search_admin.py"
+  ],
+  "results": [
+    {
+      "tool": "ruff",
+      "ok": true,
+      "duration_s": 0.0947771999053657,
+      "findings": [],
+      "error": null,
+      "omitted": 0,
+      "stats": {}
+    },
+    {
+      "tool": "bandit",
+      "ok": true,
+      "duration_s": 0.30663010012358427,
+      "findings": [],
+      "error": null,
+      "omitted": 0,
+      "stats": {}
+    },
+    {
+      "tool": "rules",
+      "ok": true,
+      "duration_s": 0.0028490000404417515,
+      "findings": [],
+      "error": null,
+      "omitted": 0,
+      "stats": {}
+    },
+    {
+      "tool": "pytest",
+      "ok": true,
+      "duration_s": 1.3557058000005782,
+      "findings": [],
+      "error": null,
+      "omitted": 0,
+      "stats": {}
+    },
+    {
+      "tool": "llm",
+      "ok": true,
+      "duration_s": 29.60536989988759,
+      "findings": [],
+      "error": null,
+      "omitted": 0,
+      "stats": {
+        "provider": "ollama",
+        "model": "qwen2.5-coder:7b",
+        "files": [
+          {
+            "path": "shop/app.py",
+            "seconds": 11.8,
+            "findings": 1,
+            "dropped": 0
+          },
+          {
+            "path": "shop/checkout.py",
+            "seconds": 7.5,
+            "findings": 0,
+            "dropped": 0
+          },
+          {
+            "path": "shop/db.py",
+            "seconds": 8.3,
+            "findings": 0,
+            "dropped": 0
+          }
+        ],
+        "tokens_in": 5938,
+        "tokens_out": 327,
+        "redactions": 0,
+        "guidelines": "guidelines.md",
+        "errors": [],
+        "load_s": 2.0,
+        "review_s": 27.6
+      }
+    },
+    {
+      "tool": "verifier",
+      "ok": true,
+      "duration_s": 6.589224900119007,
+      "findings": [],
+      "error": null,
+      "omitted": 0,
+      "stats": {
+        "calls": 1,
+        "corroborated": 0,
+        "confirmed": 0,
+        "rejected": [
+          {
+            "source": "llm",
+            "file": "shop/app.py",
+            "line": 15,
+            "severity": "high",
+            "category": "security",
+            "message": "El token de administrador se almacena en el código como una variable global. Esto es un riesgo de seguridad crítico porque los secretos nunca deben estar codificados.",
+            "rule": null,
+            "suggestion": "Mueva la configuración del token de administrador a variables de entorno y asegúrese de que no esté hardcodeado en el código.",
+            "confidence": 1.0,
+            "verified": false,
+            "verification": "The code stores the admin token as an environment variable, which is a secure practice for handling secrets."
+          }
+        ],
+        "errors": []
+      }
+    }
+  ],
+  "verdict": {
+    "decision": "APPROVE",
+    "reasons": [],
+    "blocking": [],
+    "comments": [],
+    "warnings": []
+  },
+  "duration_s": 38.1,
+  "created_at": "2026-10-12T22:25:00+00:00"
+}
