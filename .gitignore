@@ -9,3 +9,6 @@ __pycache__/
 
 # Enunciado del reto: documento interno, no se publica
 challenge/
+
+# Contexto local para Claude Code (notas de la máquina de desarrollo)
+CLAUDE.md
