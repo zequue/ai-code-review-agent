@@ -6,5 +6,5 @@ target-version = "py311"
 select = ["E", "F", "W", "B", "I"]
 
 [tool.pytest.ini_options]
-testpaths = ["shop/tests"]
+testpaths = ["shop/tests", "tests"]
 pythonpath = ["."]

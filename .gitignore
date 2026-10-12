@@ -5,6 +5,7 @@ __pycache__/
 .ruff_cache/
 *.db
 .env
+.claude/settings.local.json
 
 # Enunciado del reto: documento interno, no se publica
 challenge/
