@@ -20,12 +20,31 @@ def subtotal_cents(conn: sqlite3.Connection, cart: Cart) -> int:
     return total
 
 
-def checkout(conn: sqlite3.Connection, cart: Cart) -> dict:
+def discount_cents(conn: sqlite3.Connection, code: str, subtotal: int) -> int:
+    coupon = conn.execute("SELECT * FROM coupons WHERE code = ?", (code,)).fetchone()
+    if coupon is None:
+        raise CheckoutError("invalid coupon")
+    if coupon["used"]:
+        raise CheckoutError("coupon already used")
+    return subtotal * coupon["percent_off"] // 100
+
+
+def checkout(conn: sqlite3.Connection, cart: Cart, coupon_code: str | None = None) -> dict:
     if cart.is_empty():
         raise CheckoutError("cart is empty")
 
     subtotal = subtotal_cents(conn, cart)
-    total = subtotal
+    discount = discount_cents(conn, coupon_code, subtotal) if coupon_code else 0
+    total = subtotal - discount
+
+    if coupon_code:
+        # Marca el cupón en la misma transacción: si otro checkout lo usó primero, no se aplica.
+        cur = conn.execute(
+            "UPDATE coupons SET used = 1 WHERE code = ? AND used = 0", (coupon_code,)
+        )
+        if cur.rowcount != 1:
+            conn.rollback()
+            raise CheckoutError("coupon already used")
 
     for product_id, quantity in cart.items.items():
         conn.execute(
@@ -36,4 +55,9 @@ def checkout(conn: sqlite3.Connection, cart: Cart) -> dict:
     )
     conn.commit()
 
-    return {"order_id": cur.lastrowid, "subtotal_cents": subtotal, "total_cents": total}
+    return {
+        "order_id": cur.lastrowid,
+        "subtotal_cents": subtotal,
+        "discount_cents": discount,
+        "total_cents": total,
+    }
