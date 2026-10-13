@@ -20,12 +20,21 @@ def subtotal_cents(conn: sqlite3.Connection, cart: Cart) -> int:
     return total
 
 
-def checkout(conn: sqlite3.Connection, cart: Cart) -> dict:
+def apply_coupon(conn: sqlite3.Connection, code: str, subtotal: int) -> int:
+    coupon = conn.execute("SELECT * FROM coupons WHERE code = ?", (code,)).fetchone()
+    if coupon is None:
+        raise CheckoutError("invalid coupon")
+    price = subtotal / 100
+    discounted = price - price * coupon["percent_off"] / 100
+    return int(discounted * 100)
+
+
+def checkout(conn: sqlite3.Connection, cart: Cart, coupon_code: str | None = None) -> dict:
     if cart.is_empty():
         raise CheckoutError("cart is empty")
 
     subtotal = subtotal_cents(conn, cart)
-    total = subtotal
+    total = apply_coupon(conn, coupon_code, subtotal) if coupon_code else subtotal
 
     for product_id, quantity in cart.items.items():
         conn.execute(
@@ -36,4 +45,9 @@ def checkout(conn: sqlite3.Connection, cart: Cart) -> dict:
     )
     conn.commit()
 
-    return {"order_id": cur.lastrowid, "subtotal_cents": subtotal, "total_cents": total}
+    return {
+        "order_id": cur.lastrowid,
+        "subtotal_cents": subtotal,
+        "discount_cents": subtotal - total,
+        "total_cents": total,
+    }
