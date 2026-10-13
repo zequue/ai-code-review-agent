@@ -137,12 +137,32 @@ python review.py --replay runs/buggy.json
 | `--out ARCHIVO` | Guarda la revisión completa en JSON (para `--replay`). |
 | `--replay ARCHIVO` | Muestra una revisión guardada, sin re-ejecutarla. |
 | `--warmup` | Carga el modelo en memoria y sale. |
+| `--post-pr N` | Publica la revisión en el PR `#N` de `GITHUB_REPO`. |
 
 Código de salida: `0` aprobado, `1` cambios requeridos, `2` error (ref inexistente, archivo no
 encontrado, etc.).
 
 El revisor nunca toca tu directorio de trabajo: analiza cada cambio en un `git worktree`
 temporal que se borra al terminar.
+
+### Publicar la revisión en un pull request
+
+```bash
+python review.py --head feature/buggy --post-pr 1
+```
+
+Publica un review en el PR: el reporte completo como cuerpo y un comentario por hallazgo en su
+línea. A GitHub solo llega el resultado de la revisión; el modelo corre local.
+
+Requiere en `.env` un token *fine-grained* con permiso **Pull requests: Read and write** sobre el
+repo (`GITHUB_TOKEN`) y `GITHUB_REPO=usuario/repo`.
+
+GitHub no permite aprobar ni pedir cambios en un PR propio. Si el token es del autor del PR, el
+review se publica como comentario (con el veredicto en el encabezado). Con el token de un usuario
+bot o de una GitHub App, el veredicto se aplica como `APPROVE` o `REQUEST_CHANGES`.
+
+Ejemplos: [PR #1 (rama con bugs)](https://github.com/zequue/ai-code-review-agent/pull/1) y
+[PR #2 (rama limpia)](https://github.com/zequue/ai-code-review-agent/pull/2).
 
 ## Configuración
 
@@ -159,6 +179,8 @@ Todo se configura en `.env` (ver [.env.example](.env.example)):
 | `LLM_KEEP_ALIVE` | `30m` | Cuánto tiempo Ollama mantiene el modelo cargado. |
 | `LLM_MAX_TOKENS` | `1024` | Tope de tokens de salida por pedido. |
 | `LLM_GUIDELINES` | `reviewer/guidelines.md` | Guía de revisión del equipo; `none` la desactiva. |
+| `GITHUB_TOKEN` | — | Solo para `--post-pr`. |
+| `GITHUB_REPO` | — | Repo de los PRs, `usuario/repo`. |
 
 **Usar un modelo en la nube.** Con `LLM_PROVIDER=openai`, `LLM_BASE_URL`, `LLM_MODEL` y
 `LLM_API_KEY` el sistema funciona con cualquier proveedor compatible con OpenAI, sin cambios de
@@ -211,7 +233,8 @@ Es la principal limitación del modelo local; el análisis está en
 │   ├── verify.py        agente verificador
 │   ├── redact.py        borrado de secretos
 │   ├── gate.py          política de veredicto
-│   └── report.py        reporte Markdown / consola
+│   ├── report.py        reporte Markdown / consola
+│   └── github.py        publicación en pull requests
 ├── shop/                mini e-commerce de prueba (Flask + SQLite)
 ├── tests/               tests del revisor
 ├── eval/                evaluación contra bugs esperados

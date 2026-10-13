@@ -11,7 +11,7 @@
     {
       "tool": "ruff",
       "ok": true,
-      "duration_s": 0.09973470005206764,
+      "duration_s": 0.16965549997985363,
       "findings": [],
       "error": null,
       "omitted": 0,
@@ -20,7 +20,7 @@
     {
       "tool": "bandit",
       "ok": true,
-      "duration_s": 0.3568690998945385,
+      "duration_s": 0.5858315001241863,
       "findings": [
         {
           "source": "bandit",
@@ -43,7 +43,7 @@
     {
       "tool": "rules",
       "ok": true,
-      "duration_s": 0.0027004999574273825,
+      "duration_s": 0.0031430998351424932,
       "findings": [
         {
           "source": "rules",
@@ -66,7 +66,7 @@
     {
       "tool": "pytest",
       "ok": true,
-      "duration_s": 0.890372000169009,
+      "duration_s": 1.3336869000922889,
       "findings": [],
       "error": null,
       "omitted": 0,
@@ -75,7 +75,7 @@
     {
       "tool": "llm",
       "ok": true,
-      "duration_s": 218.48073249985464,
+      "duration_s": 34.041103000054136,
       "findings": [
         {
           "source": "llm",
@@ -112,19 +112,19 @@
         "files": [
           {
             "path": "shop/app.py",
-            "seconds": 8.7,
+            "seconds": 9.4,
             "findings": 0,
             "dropped": 0
           },
           {
             "path": "shop/checkout.py",
-            "seconds": 11.3,
+            "seconds": 11.7,
             "findings": 1,
             "dropped": 1
           },
           {
             "path": "shop/db.py",
-            "seconds": 10.6,
+            "seconds": 10.9,
             "findings": 1,
             "dropped": 0
           }
@@ -134,14 +134,14 @@
         "redactions": 0,
         "guidelines": "guidelines.md",
         "errors": [],
-        "load_s": 187.8,
-        "review_s": 30.7
+        "load_s": 2.0,
+        "review_s": 32.0
       }
     },
     {
       "tool": "verifier",
       "ok": true,
-      "duration_s": 5.397228599991649,
+      "duration_s": 5.5343583999201655,
       "findings": [],
       "error": null,
       "omitted": 0,
@@ -218,6 +218,117 @@
     "comments": [],
     "warnings": []
   },
-  "duration_s": 225.5,
-  "created_at": "2026-10-12T22:24:22+00:00"
+  "duration_s": 42.0,
+  "created_at": "2026-10-13T03:01:39+00:00",
+  "changed_lines": {
+    "shop/app.py": [
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      66
+    ],
+    "shop/checkout.py": [
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      37,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53
+    ],
+    "shop/db.py": [
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      34,
+      35,
+      36,
+      37,
+      38,
+      54,
+      55,
+      56,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82,
+      83,
+      84,
+      85
+    ],
+    "shop/tests/test_coupons.py": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "shop/tests/test_search_admin.py": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ]
+  }
 }

@@ -85,6 +85,8 @@ class Review:
     verdict: Verdict
     duration_s: float
     created_at: str
+    # líneas agregadas por archivo: GitHub solo acepta comentarios en líneas del diff
+    changed_lines: dict[str, list[int]] = field(default_factory=dict)
 
     def to_dict(self) -> dict:
         return asdict(self)

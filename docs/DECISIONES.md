@@ -69,6 +69,10 @@ Tres principios guiaron el diseño:
 - **Reporte.** Cuando bandit y el LLM ven lo mismo, se fusionan en un solo hallazgo, con la
   sugerencia del LLM. Los descartados por el verificador quedan visibles con el motivo. Incluye
   tiempos, tokens y costo, y toda revisión se guarda en JSON y se puede repetir con `--replay`.
+- **Pull requests.** Con `--post-pr N`, la revisión se publica como review de GitHub, con un
+  comentario en cada línea. Solo sale el resultado, no el código. GitHub no permite aprobar ni
+  rechazar un PR propio, así que con mi token se publica como comentario; con el token de un bot,
+  el veredicto se aplica.
 
 ### Qué va con LLM y qué sin LLM (decidido con evidencia)
 
@@ -164,8 +168,9 @@ mecanismo de evaluación para seguir midiendo.
    privacidad. Sobre todo para el cupón.
 3. **Un set de evaluación más grande**, con PRs reales del equipo y bugs históricos, que sirva como
    regresión de cada cambio de prompt o de modelo.
-4. **Integración con el flujo:** publicar la revisión como comentarios por línea en el PR, y un
-   GitHub Action sobre un runner propio con Ollama, para no sacar el código de la infraestructura.
+4. **Integración con el flujo:** un GitHub Action sobre un runner propio con Ollama, que corra la
+   revisión en cada PR sin sacar el código de la infraestructura, y una GitHub App como autor del
+   review, para que el veredicto bloquee el merge.
 5. **Más reglas determinísticas** a partir de lo que el LLM detecta seguido (semgrep o reglas AST).
    Cada patrón estable que pasa del LLM a una regla gana certeza y velocidad y se vuelve gratis.
 6. **Ciclo de aprendizaje:** registrar los comentarios que el equipo descarta y usarlos para ajustar

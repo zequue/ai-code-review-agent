@@ -6,6 +6,7 @@ Uso:
     python review.py --head feature/buggy --markdown r.md --out r.json
     python review.py --warmup                             # carga el modelo y sale
     python review.py --replay runs/buggy.json             # repite una revisión guardada
+    python review.py --head feature/buggy --post-pr 1     # publica la revisión en el PR #1
 
 Código de salida: 0 = APPROVE, 1 = REQUEST_CHANGES, 2 = error de uso o de entorno.
 """
@@ -17,10 +18,12 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+import requests
 from dotenv import load_dotenv
 
 from reviewer.diff import parse_diff
 from reviewer.gate import decide
+from reviewer.github import GitHubError, post_review
 from reviewer.llm import LLMConfig, run_llm_review, warmup
 from reviewer.models import Review
 from reviewer.report import render_console, render_markdown
@@ -47,6 +50,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--no-llm", action="store_true", help="solo la etapa determinística")
     parser.add_argument("--markdown", type=Path, help="guarda el reporte en Markdown")
     parser.add_argument("--out", type=Path, help="guarda la revisión completa en JSON")
+    parser.add_argument(
+        "--post-pr", type=int, metavar="N", help="publica la revisión en el PR #N de GITHUB_REPO"
+    )
     return parser.parse_args(argv)
 
 
@@ -81,6 +87,7 @@ def run_review(args: argparse.Namespace, cfg: LLMConfig) -> Review:
         verdict=decide(results),
         duration_s=round(time.perf_counter() - started, 1),
         created_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        changed_lines={d.path: sorted(d.added_lines) for d in diffs},
     )
 
 
@@ -116,6 +123,15 @@ def main(argv: list[str] | None = None) -> int:
             json.dumps(review.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8"
         )
         print(f"Revisión completa (JSON): {args.out}")
+    if args.post_pr:
+        try:
+            posted = post_review(review, args.post_pr)
+        except (GitHubError, requests.RequestException) as exc:
+            print(f"Error al publicar en GitHub: {exc}", file=sys.stderr)
+            return EXIT_ERROR
+        print(f"\nPublicado en el PR #{args.post_pr} como {posted['event']}: {posted['url']}")
+        if posted["note"]:
+            print(f"  Nota: {posted['note']}")
 
     return EXIT_APPROVE if review.verdict.approved else EXIT_CHANGES
 

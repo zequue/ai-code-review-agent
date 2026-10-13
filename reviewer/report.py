@@ -50,18 +50,18 @@ def merge(findings: list[Finding]) -> list[tuple[Finding, Finding | None]]:
             used.add(id(match))
         pairs.append((f, match))
     pairs.extend((f, None) for f in llm_findings if id(f) not in used)
-    pairs.sort(key=lambda pair: -severity_rank(_severity(*pair)))  # estable: respeta el resto
+    pairs.sort(key=lambda pair: -severity_rank(merged_severity(*pair)))  # estable: respeta el resto
     return pairs
 
 
-def _severity(f: Finding, extra: Finding | None) -> str:
+def merged_severity(f: Finding, extra: Finding | None) -> str:
     """Severidad del par fusionado: la mayor de las dos opiniones."""
     if extra is not None and severity_rank(extra.severity) > severity_rank(f.severity):
         return extra.severity
     return f.severity
 
 
-def _sources(f: Finding, extra: Finding | None) -> str:
+def sources_label(f: Finding, extra: Finding | None) -> str:
     label = SOURCE_LABEL.get(f.source, f.source)
     if f.rule and f.source != "pytest":
         label += f" `{f.rule}`"
@@ -82,8 +82,8 @@ def _location(f: Finding) -> str:
 def _finding_md(f: Finding, extra: Finding | None) -> str:
     category = CATEGORY_LABEL.get(f.category, f.category)
     lines = [
-        f"**`{_location(f)}`** · {_severity(f, extra).upper()} · {category} · "
-        f"{_sources(f, extra)}",
+        f"**`{_location(f)}`** · {merged_severity(f, extra).upper()} · {category} · "
+        f"{sources_label(f, extra)}",
         "",
         f.message,
     ]
@@ -200,8 +200,8 @@ def render_console(review: Review) -> str:
             continue
         out += ["", f"{title} ({len(pairs)})"]
         for f, extra in pairs:
-            severity = _severity(f, extra).upper()
-            out.append(f"  {severity:8} {_location(f):22} [{_sources(f, extra)}]")
+            severity = merged_severity(f, extra).upper()
+            out.append(f"  {severity:8} {_location(f):22} [{sources_label(f, extra)}]")
             out.append(f"           {f.message}")
             suggestion = f.suggestion or (extra.suggestion if extra else None)
             if suggestion:
