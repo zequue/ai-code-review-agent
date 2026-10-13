@@ -1,4 +1,6 @@
+import hmac
 import os
+from functools import wraps
 
 from flask import Flask, g, jsonify, request
 
@@ -10,6 +12,7 @@ from shop.checkout import CheckoutError, checkout
 def create_app(db_path: str | None = None) -> Flask:
     app = Flask(__name__)
     app.config["DB_PATH"] = db_path or os.environ.get("SHOP_DB", "shop.db")
+    app.config["ADMIN_TOKEN"] = os.environ.get("ADMIN_TOKEN", "")
 
     def get_conn():
         if "conn" not in g:
@@ -22,12 +25,30 @@ def create_app(db_path: str | None = None) -> Flask:
         if conn is not None:
             conn.close()
 
+    def require_admin(view):
+        @wraps(view)
+        def wrapper(*args, **kwargs):
+            expected = app.config["ADMIN_TOKEN"]
+            provided = request.headers.get("X-Admin-Token", "")
+            if not expected or not hmac.compare_digest(provided, expected):
+                return jsonify({"error": "unauthorized"}), 401
+            return view(*args, **kwargs)
+
+        return wrapper
+
     with app.app_context():
         db.init_db(get_conn())
 
     @app.get("/products")
     def products():
         return jsonify(db.list_products(get_conn()))
+
+    @app.get("/products/search")
+    def search():
+        term = request.args.get("q", "").strip()
+        if not term:
+            return jsonify([])
+        return jsonify(db.search_products(get_conn(), term))
 
     @app.get("/products/<int:product_id>")
     def product_detail(product_id: int):
@@ -36,12 +57,28 @@ def create_app(db_path: str | None = None) -> Flask:
             return jsonify({"error": "not found"}), 404
         return jsonify(product)
 
+    @app.post("/admin/products")
+    @require_admin
+    def admin_add_product():
+        data = request.get_json(silent=True) or {}
+        try:
+            price_cents = int(data["price_cents"])
+            stock = int(data.get("stock", 0))
+            if price_cents <= 0 or stock < 0:
+                raise ValueError("price must be positive and stock non-negative")
+            product_id = db.add_product(
+                get_conn(), str(data["name"]), str(data["category"]), price_cents, stock
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            return jsonify({"error": str(exc)}), 400
+        return jsonify({"id": product_id}), 201
+
     @app.post("/checkout")
     def do_checkout():
         payload = request.get_json(silent=True) or {}
         try:
             cart = Cart.from_payload(payload.get("items", []))
-            order = checkout(get_conn(), cart)
+            order = checkout(get_conn(), cart, payload.get("coupon"))
         except (CartError, CheckoutError, KeyError, ValueError) as exc:
             return jsonify({"error": str(exc)}), 400
         return jsonify(order), 201
