@@ -12,3 +12,7 @@ challenge/
 
 # Contexto local para Claude Code (notas de la máquina de desarrollo)
 CLAUDE.md
+
+# Material personal de la presentación
+demo/
+runs/demo-*
